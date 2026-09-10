@@ -5,84 +5,137 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>סל־סל | משווים לפני שקונים</title>
   <meta name="description" content="השוואת מחירי מוצרים וסל קניות בין רשתות הסופר">
+  <meta name="theme-color" content="#0b3b2c" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d1512" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23c7f04b'/%3E%3Cpath d='M15 24h34l-3.5 24a5 5 0 0 1-5 4h-17a5 5 0 0 1-5-4L15 24Zm10 0v-5a7 7 0 0 1 14 0v5' fill='none' stroke='%230b3b2c' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <script>try{const t=localStorage.getItem('salsal-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t;}catch{}</script>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <a class="skip-link" href="#products">דילוג לתוצאות</a>
+
   <header class="site-header">
     <div class="header-bar">
-      <a class="brand" href="./">סל־סל<span class="brand-mark" aria-hidden="true">▥</span></a>
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h16l-1.6 10.2a2 2 0 0 1-2 1.8H7.6a2 2 0 0 1-2-1.8L4 8Z" fill="currentColor"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand-word">סל־סל</span>
+      </a>
+
       <nav class="site-nav" aria-label="ניווט ראשי">
-        <button class="nav-active" id="allNav">השוואת מחירים</button>
-        <button id="promoNav">מבצעים</button>
+        <button class="nav-active" id="allNav" type="button" aria-pressed="true">השוואת מחירים</button>
+        <button id="promoNav" type="button" aria-pressed="false">מבצעים</button>
       </nav>
-      <span class="version" title="גרסה ראשונה / 01"><span class="version-full">גרסה ראשונה / </span>01</span>
+
+      <div class="header-end">
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="מעבר למצב כהה" title="מצב תצוגה">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6 17 17M7 7 5.4 5.4"/></g></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8.4 8.4 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" fill="currentColor"/></svg>
+        </button>
+        <span class="version" title="גרסה ראשונה"><span class="version-full">גרסה </span>01</span>
+      </div>
     </div>
   </header>
 
   <main>
-    <div class="intro">
-      <div>
-        <div class="eyebrow">קונים חכם. פשוט ככה.</div>
-        <h1>אותו מוצר. <span>מחיר אחר.</span></h1>
+    <!-- Hero: brand statement and the primary action share one block -->
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">קונים חכם. פשוט ככה.</p>
+        <h1>אותו מוצר.<br><em>מחיר אחר.</em></h1>
+        <p class="hero-sub">לפני שממלאים את העגלה, בודקים איפה הסל משתלם יותר.</p>
       </div>
-      <p>לפני שממלאים את העגלה,<br>בודקים איפה הסל משתלם יותר.</p>
-    </div>
 
-    <div class="notice" id="dataNotice" role="status">טוען נתונים מקובצי הרשתות…</div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 220 180" fill="none">
+          <circle cx="104" cy="92" r="76" class="art-blob"/>
+          <path d="M74 70V56a30 30 0 0 1 60 0v14" class="art-handle"/>
+          <path d="M44 78h120l-12 71a18 18 0 0 1-17.8 15.2H73.8A18 18 0 0 1 56 149L44 78Z" class="art-basket"/>
+          <rect x="36" y="64" width="136" height="18" rx="9" class="art-rim"/>
+          <path d="M80 98l5 52M104 98v52M128 98l-5 52" class="art-slat"/>
+          <g transform="rotate(-14 171 40)">
+            <rect x="140" y="17" width="62" height="46" rx="13" class="art-tag"/>
+            <circle cx="153" cy="31" r="4.5" class="art-tag"/>
+            <text x="174" y="53" text-anchor="middle" class="art-price">₪</text>
+          </g>
+        </svg>
+      </div>
 
-    <section class="searchbar">
-      <label class="search">
-        <span aria-hidden="true">⌕</span>
-        <input id="search" placeholder="מה ברשימת הקניות שלך? שם מוצר או ברקוד" aria-label="חיפוש שם מוצר או ברקוד">
-        <kbd>/</kbd>
-      </label>
-      <label class="region" for="city">עיר או יישוב
-        <input id="city" list="cities" placeholder="חיפוש בכל הארץ…" autocomplete="off">
-        <datalist id="cities"></datalist>
-      </label>
+      <div class="finder">
+        <label class="search" for="search">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search" placeholder="מה ברשימת הקניות שלך? שם מוצר או ברקוד" aria-label="חיפוש שם מוצר או ברקוד">
+          <kbd>/</kbd>
+        </label>
+        <label class="region" for="city">
+          <span class="region-label">עיר או יישוב</span>
+          <input id="city" placeholder="חיפוש בכל הארץ…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cityMenu" aria-autocomplete="list">
+          <div id="cityMenu" class="city-menu" role="listbox" aria-label="יישובים" hidden></div>
+        </label>
+      </div>
+
     </section>
 
-    <details id="branchPicker" class="branch-picker">
-      <summary>
-        <span>איפה משווים?</span>
-        <span id="selectionSummary">בחירת רשתות וסניפים בכל הארץ</span>
-      </summary>
-      <div class="picker-tools">
-        <label>רשת שיווק
-          <select id="chainFilter"><option value="">כל הרשתות</option></select>
-        </label>
-        <label class="branch-search">חיפוש סניף
-          <input id="branchSearch" placeholder="שם סניף, כתובת או עיר">
-        </label>
-        <button id="representativeStores" type="button">סניף אחד מכל רשת בתוצאות</button>
-        <button id="clearDraft" type="button">ניקוי הבחירה</button>
-      </div>
-      <div id="directoryCount" class="directory-count" role="status"></div>
-      <div id="branchList" class="branch-list"></div>
-      <div class="picker-bottom">
-        <span id="draftCount"></span>
-        <button id="applyBranches" class="primary" type="button">השוואת הסניפים שנבחרו</button>
-      </div>
-      <p class="picker-note">אפשר לבחור עד 24 סניפים להשוואה. מחיריהם נבדקים כל 15 דקות בזמן שהשרת פועל. טעינה ראשונה של סניף עשויה לקחת כמה דקות.</p>
-    </details>
+    <div id="loadingBranches" class="banner" role="status" hidden></div>
+    <div id="scopeBanner" class="banner warn" role="alert" hidden></div>
 
-    <div id="loadingBranches" class="loading-branches" role="status" hidden></div>
+    <!-- One control strip: which branches, how many results, how to sort -->
+    <div class="toolbar">
+      <details id="branchPicker" class="branch-picker">
+        <summary class="stores-chip">
+          <span class="stores-dots" id="storesAvatars" aria-hidden="true"></span>
+          <span class="stores-text">
+            <strong id="selectionSummary">בחירת רשתות וסניפים</strong>
+            <small>איפה משווים? · שינוי הבחירה</small>
+          </span>
+          <span class="chip-spinner" aria-hidden="true"></span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </summary>
+
+        <div class="picker-panel">
+          <div class="picker-tools">
+            <label>רשת שיווק
+              <select id="chainFilter"><option value="">כל הרשתות</option></select>
+            </label>
+            <label class="branch-search">חיפוש סניף
+              <input id="branchSearch" placeholder="שם סניף, כתובת או עיר">
+            </label>
+            <button id="representativeStores" type="button">סניף אחד מכל רשת</button>
+            <button id="clearDraft" type="button">ניקוי הבחירה</button>
+          </div>
+          <div id="directoryCount" class="directory-count" role="status"></div>
+          <div id="branchList" class="branch-list"></div>
+          <div class="picker-bottom">
+            <span id="draftCount"></span>
+            <button id="applyBranches" class="primary" type="button">השוואת הסניפים שנבחרו</button>
+          </div>
+          <p class="picker-note">אפשר לבחור עד 24 סניפים להשוואה. מחיריהם נבדקים כל 15 דקות בזמן שהשרת פועל. טעינה ראשונה של סניף עשויה לקחת כמה דקות.</p>
+        </div>
+      </details>
+
+      <div class="toolbar-end">
+        <span id="resultCount" role="status" aria-live="polite" aria-atomic="true"></span>
+        <label class="sort-field" for="sort">
+          <span>מיון</span>
+          <select id="sort" aria-label="מיון מוצרים">
+            <option value="popular">מוצרים להשוואה</option>
+            <option value="price">מחיר: מהנמוך לגבוה</option>
+            <option value="saving">הפער הגדול ביותר</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="metastrip">
+      <div class="hero-stats" id="dataNotice" role="status">טוען נתונים מקובצי הרשתות…</div>
+      <p class="coverage" id="coverage"></p>
+    </div>
+
+    <div id="categories" class="categories" aria-label="סניפים להשוואה"></div>
 
     <div class="workspace">
       <section class="catalog" id="catalog">
-        <div id="categories" class="categories" aria-label="סניפים להשוואה"></div>
-        <div class="result-head">
-          <div>
-            <h2>על המדף</h2>
-            <span id="resultCount"></span>
-          </div>
-          <select id="sort" aria-label="מיון מוצרים">
-            <option value="popular">מוצרים להשוואה</option>
-            <option value="price">מחיר רגיל: מהנמוך לגבוה</option>
-            <option value="saving">פער במחיר רגיל</option>
-          </select>
-        </div>
-        <div class="retailers" id="coverage"></div>
         <div id="products" class="products"></div>
         <button id="loadMore" class="load-more" type="button" hidden>עוד מוצרים</button>
       </section>
@@ -92,27 +145,37 @@
           <h2>הסל שלך <span id="basketCount">0</span></h2>
           <button id="clear" type="button">ניקוי</button>
         </div>
-        <div id="basketItems" class="basket-items"></div>
         <div id="basketTotals" class="basket-totals"></div>
-        <p class="basket-note">מחירים רגילים בלבד, ללא מבצעים ומשלוח.<br>סניף עם מוצרים חסרים אינו מדורג כסל מלא.</p>
+        <div id="basketItems" class="basket-items"></div>
+        <p class="basket-note">מחירים רגילים בלבד, ללא מבצעים ומשלוח. סניף עם מוצרים חסרים אינו מדורג כסל מלא.</p>
       </aside>
     </div>
 
     <footer>
-      <a class="brand" href="./">סל־סל</a>
-      <p>מחיר טוב מתחיל בהשוואה.</p>
-      <button id="sourcesBtn" type="button">על המחירים והעדכונים ↗</button>
+      <div class="footer-brand">
+        <a class="brand" href="./">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h16l-1.6 10.2a2 2 0 0 1-2 1.8H7.6a2 2 0 0 1-2-1.8L4 8Z" fill="currentColor"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="brand-word">סל־סל</span>
+        </a>
+        <p>מחיר טוב מתחיל בהשוואה.</p>
+      </div>
+      <button id="sourcesBtn" class="ghost" type="button">מאיפה המחירים? ↗</button>
     </footer>
   </main>
 
-  <nav class="mobile-shortcuts" aria-label="גישה מהירה">
-    <a href="#catalog">חזרה למוצרים</a>
-    <a href="#basket">הסל שלי</a>
-  </nav>
-  <dialog id="detail">
+  <a class="basket-dock" id="basketDock" href="#basket" hidden>
+    <span class="dock-count" id="dockCount">0</span>
+    <span class="dock-text" id="dockText">הסל שלי</span>
+    <span class="dock-go" aria-hidden="true">↑</span>
+  </a>
+
+  <dialog id="detail" aria-label="פרטי מוצר ומקורות מחיר">
     <button class="close" aria-label="סגירה" type="button">×</button>
     <div id="detailContent"></div>
   </dialog>
+
   <div id="toast" role="status"></div>
   <script src="./app.js"></script>
 </body>

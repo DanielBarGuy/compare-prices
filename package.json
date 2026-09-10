@@ -6,9 +6,14 @@
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "check": "node --check server.mjs && node --check catalog.mjs && node --check dist/app.js",
-    "test": "node --test tests/catalog.test.mjs && python3 -B tests/test_ingest.py && python3 -B tests/test_directory.py",
+    "test": "node --test tests/catalog.test.mjs && python3 -B tests/test_ingest.py && python3 -B tests/test_directory.py && python3 -B tests/test_database.py && python3 -B tests/test_images.py && python3 -B tests/test_sources.py",
     "sync": "python3 -B scripts/sync.py",
-    "directory": "python3 -B scripts/directory.py"
+    "db": "python3 -B scripts/build_db.py",
+    "directory": "python3 -B scripts/directory.py",
+    "images": "python3 -B scripts/sync_images.py"
+  },
+  "engines": {
+    "node": ">=22.16"
   },
   "type": "module"
 }

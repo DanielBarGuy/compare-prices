@@ -1,61 +1,97 @@
 # סל־סל · Compare Prices
 
-Hebrew local supermarket comparison using official price-transparency XML files. No synthetic price fixtures are served.
+אפליקציה מקומית בעברית להשוואת מחירי סופר ופארם על בסיס קובצי שקיפות המחירים הרשמיים של הקמעונאים. האתר אינו מציג מחירי דמה ואינו משתמש באתר השוואה אחר כמקור נתונים.
 
-## Run
+## הפעלה
 
-Node 18+ and Python 3.9+ (standard library only):
+נדרשים Node 22.16 ומעלה ו־Python 3.9 ומעלה (ספרייה סטנדרטית בלבד):
 
-```
-node server.mjs
-```
-
-Open http://localhost:3000. The server binds to loopback. It checks official sources every 15 minutes while the process is running and the machine is awake and online. `python3 -B scripts/sync.py` runs a manual sync. Public portal login sessions are kept only in memory; no personal credentials are used.
-
-On the first run, the app downloads the public locality and branch directories. Select one to 24 branches in the interface to import their current official price files. Generated source files and branch snapshots stay in the local `data/` directory and are intentionally excluded from Git.
-
-## Data
-
-- Raw downloaded official files: `data/raw/`.
-- Durable per-branch snapshots: `data/stores/`, written atomically.
-- Source filename, publication time, import time, SHA-256 and price-change time are retained.
-- PriceFull establishes a branch baseline; available subsequent Price files update it. PromoFull and Promo are processed separately. The collector skips previously imported filenames and retains last successful data on failure. First sync cannot reconstruct incremental files no longer exposed by the publisher; source timestamps are shown instead of claiming real-time till prices.
-- Cross-chain matches use identical published item codes for non-weighted ItemType=1 products. Internal/weighted codes are namespaced by chain.
-- Prices are integer agorot. Missing products make a basket incomplete and prevent a cheapest-full-basket claim.
-- Promotions are shown with validity windows, public club/coupon fields and source descriptions. They are NOT automatically applied to price comparisons or baskets. Promotion eligibility, combinations, quantity deals and club mappings need further work.
-- The directory includes all 1,272 named localities in the government dataset (the code-zero non-locality row is excluded), and 878 branch records from 7 chains. A locality in the search does not imply retail coverage. Published branch lists may contain historical entries or missing city/address fields. Unknown cities stay unknown.
-- Choose up to 24 branches through the city / chain / address search. A selection imports real prices on demand, saves `data/selection.json` and is checked every 15 minutes. Only the current selection is loaded into server memory; raw files and previous branch snapshots remain on disk. This is a local, single-user comparison, not a multi-user service.
-- Directory metadata refreshes daily during a price sync; locality source is the government dataset archived in `data/localities-source.json`. Published prices do not establish stock availability.
-- The shopping list is stored locally in this browser. Legacy demo baskets are not reused.
-
-## Sources
-
-- https://prices.shufersal.co.il/
-- https://prices.carrefour.co.il/
-- https://www.rami-levy.co.il/he/price-transparency
-- https://url.publishedprices.co.il/ (public RamiLevi and Yohananof accounts; empty passwords)
-- https://laibcatalog.co.il/ (linked by https://victory.co.il/parallel/)
-
-Directory adapters: Shufersal, Carrefour, Rami Levi, Yohananof, Victory, Osher Ad, Mahsanei Hashuk. Initial prices loaded for 14 branches. Osher Ad public read-only access was verified in the Israeli Consumer Council public transparency guide: https://www.consumers.org.il/item/transparency_price . Dabah connection is pending explicit approval following an automatic review block; it is not represented as connected.
-
-Government localities source: https://data.gov.il/api/3/action/datastore_search?resource_id=5f75cd96-d670-43b0-bf6d-583436c5d054&limit=5000
-
-Victory and Mahsanei Hashuk use the public laibcatalog webapi: `/webapi/api/getfiles?edi={chainId}` and `/webapi/{chainId}/{filename}`. Adapter details were located using the source of il-supermarket-scraper 1.0.12 (MIT), then independently verified against downloaded XML; the package is not installed or executed.
-- See `DATA-SOURCES.md` for the source research notes created during the Claude Code collaboration.
-
-## Validation
-
-```
-node --test tests/catalog.test.mjs
-python3 -B tests/test_ingest.py
-python3 -B tests/test_directory.py
-node --check dist/app.js
+```sh
+npm run dev
 ```
 
-Tests check provenance against original files, branch identity, quantities, incomplete baskets, selection isolation and promotion expiry. Browser UI testing has not been requested or performed. Optional WebMCP registration is feature-detected; native browser WebMCP verification is unavailable.
+יש לפתוח את http://localhost:3000. השרת מאזין ל־localhost בלבד ובודק אם פורסמו קבצים חדשים כל 15 דקות, כל עוד התהליך פועל והמחשב מחובר לרשת. לסנכרון ידני:
 
-Product pictures are external reference images matched by barcode. Source pages: https://www.ayaakov.co.il/products/item/41 ; https://peppersmarket.shopo.co.il/?catalogProduct=12053 ; https://shoppy.co.il/products/barilla-pasta-spaghetti-no-5 . Confirm image reuse rights before publishing.
+```sh
+npm run sync
+```
 
-## GitHub Pages
+בהפעלה הראשונה נטענים מאגר היישובים הציבורי וקובצי `Stores` של הרשתות. לאחר בחירת סניף אחד עד 24 סניפים, המערכת מייבאת עבורם את קובצי המחירים והמבצעים הרשמיים. קובצי המקור ותמונות המצב נשמרים תחת `data/` ואינם נכנסים ל־Git.
 
-The application now requires its local Node/Python service for official source ingestion and comparison APIs. GitHub Pages can only host static files, so it is not a working deployment target for this version. Run it locally until a server-backed deployment is configured.
+## כיסוי מקורות
+
+בקוד מוגדרות כיום 30 זהויות של רשתות/פידים רשמיים: שבעת החיבורים המקוריים ועוד 23 חיבורים שנוספו לאחר אימות זהות הרשת וקובץ הסניפים. זהו כיסוי רחב, אך אינו טענה שכל רשת, סניף או מחיר בישראל מכוסים.
+
+- פורטלים ייעודיים: שופרסל; קרפור / Global Retail.
+- Published Prices / Cerberus: רמי לוי, יוחננוף, אושר עד, קשת טעמים, טיב טעם, פרשמרקט / מחסני להב, סטופ מרקט, סאלח דבאח, דור אלון, פוליצר וסופר יודה.
+- Bina Projects: קינג סטור, סופר ברקת, זול ובגדול, מעיין 2000, סופר ספיר, שוק העיר, שפע ברכת השם, גוד פארם, משנת יוסף וסיטי מרקט קריית גת.
+- Laib Catalog: ויקטורי, מחסני השוק וח. כהן.
+- מתאמים ייעודיים נוספים: חצי חינם, נתיב החסד / ברכל, סופר־פארם ווולט מרקט.
+
+מספר היישובים, הרשתות שהצליחו להתרענן והסניפים הזמינים בממשק מחושבים בכל רענון ספרייה ואינם מספרים קשיחים בתיעוד. רענון ידני מתבצע באמצעות `npm run directory`; במהלך סנכרון מחירים הספרייה מתרעננת אוטומטית אם היא ישנה מ־24 שעות. במקרה של כשל נקודתי נשמר המידע האחרון שהצליח עבור אותה רשת.
+
+פרטי כניסה שאינם ריקים אינם נשמרים בקוד. עבור סאלח דבאח וסופר יודה יש להגדיר מקומית את `SALSAL_SALAH_DABAH_PASSWORD` ואת `SALSAL_SUPER_YUDA_PASSWORD`, בהתאמה, לפי פרטי הגישה הציבוריים העדכניים שמפרסמת הרשות להגנת הצרכן. בהיעדר המשתנה המקור מדווח כלא זמין ותמונת המצב האחרונה נשמרת.
+
+פערים ידועים ומתועדים:
+
+- רוסמן אינה מחוברת: לא אומתו עבורה פורטל קובצי שקיפות, פרטי גישה ציבוריים או קובץ `Stores` שמאפשר לזהות סניפים בבטחה.
+- לפז Yellow אומת פיד מחירים רשמי, אך לא פורסם בו קובץ `Stores`; לכן הוא אינו נטען עד שניתן יהיה לקשור מחירים לסניף בלי לנחש.
+- למגה לא אומת פיד נפרד ועדכני. סניפים ממותגי ביטן הוותיקים נכללים רק כפי שהם מתפרסמים בפיד הרשמי של Global Retail, תחת חיבור קרפור, ואינם נספרים כרשת נפרדת.
+
+מפת המקורות, הפורמטים והמגבלות מפורטת ב־[DATA-SOURCES.md](DATA-SOURCES.md).
+
+## נתונים ואמינות
+
+- קובצי המקור הגולמיים נשמרים ב־`data/raw/`; תמונות מצב עמידות לכל סניף נשמרות ב־`data/stores/` ונכתבות אטומית.
+- לכל מקור נשמרים שם הקובץ, מועד הפרסום, מועד הייבוא, SHA־256 ומועד שינוי המחיר.
+- `PriceFull` יוצר בסיס לסניף וקובצי `Price` מאוחרים מעדכנים אותו. `PromoFull` ו־`Promo` מעובדים במסלול נפרד. קובץ שכבר נקלט אינו מיובא שוב, וכשל אינו מוחק את תמונת המצב האחרונה שהצליחה.
+- מוצרים רגילים מושווים בין רשתות רק לפי קוד פריט זהה שפורסם. קודים פנימיים ומוצרים שקילים מופרדים לפי רשת כדי למנוע התאמה שגויה.
+- המחירים נשמרים באגורות שלמות. סניף שחסר בו מוצר מהסל מסומן כסל חלקי ואינו יכול לזכות כ„סל המלא הזול ביותר“.
+- מבצעים מוצגים עם התוקף והתנאים שפורסמו, אך עדיין אינם מוחלים אוטומטית על מחיר ההשוואה או הסל.
+- הופעת יישוב בחיפוש אינה מבטיחה שיש בו סניף מחובר. קובצי רשת עשויים לכלול סניפים היסטוריים או שדות כתובת חסרים; מיקום שלא ניתן לזהות נשאר לא ידוע.
+- בחירת הסניפים נשמרת ב־`data/selection.json`. רק הבחירה הפעילה נטענת לזיכרון השרת; קובצי המקור ותמונות המצב הקודמות נשארים בדיסק.
+- מחיר שפורסם אינו הוכחה למלאי בפועל, ומועדי המקור מוצגים במקום לטעון שהמחיר הוא מחיר קופה בזמן אמת.
+- רשימת הקניות נשמרת מקומית בדפדפן. זהו שירות מקומי למשתמש יחיד, לא שרת רב־משתמשים.
+
+## מסד הנתונים המקומי
+
+הפרויקט בונה מסד SQLite מנורמל משלו ב־`data/prices.sqlite3`, אך ורק מתמונות המצב המאומתות שב־`data/stores/`. קובצי ה־XML/GZIP המקוריים נשארים ב־`data/raw/` כראיה ניתנת לביקורת.
+
+המסד כולל סניפים, מוצרים, הצעות מחיר לכל סניף, מבצעים, פריטי מבצע, hashes של המקורות, חיפוש טקסט מלא ומטא־דאטה מורשה של תמונות מוצר. בנייה ידנית:
+
+```sh
+npm run db
+```
+
+כל `npm run sync` מוצלח בונה את המסד מחדש. ההחלפה אטומית וכותבי המסד והתמונות חולקים נעילה בין־תהליכית, כך שהאתר אינו קורא דור חלקי. אם SQLite אינו זמין או ישן יותר מתמונות המצב שנבחרו, השרת חוזר אל קובצי ה־JSON המאומתים.
+
+## תמונות מוצר
+
+קובצי שקיפות המחירים אינם כוללים תמונות. כברירת מחדל מוצג placeholder ניטרלי, ורק רשומת תמונה במצב `verified` מצורפת למוצר. אין גירוד או hotlink מתמונות של קמעונאים ואתרי מסחר.
+
+Open Food Facts נתמך כמקור מועמדים משני. שאילתה מרוחקת מותרת רק עבור GTIN מקומי מפורש, תקין ולא־שקיל, עד 15 קודים בהרצה, ובמרווח מינימלי בין בקשות. יש לספק User־Agent תיאורי עם פרטי קשר:
+
+```sh
+SALSAL_IMAGE_USER_AGENT='SalSal/1.0 (contact@example.com)' npm run images -- --barcode 7290004131074
+```
+
+אפשר לחזור על `--barcode` עד 15 פעמים. לעיבוד אצווה ללא רשת יש לספק ייצוא JSONL מקומי:
+
+```sh
+npm run images -- --off-jsonl /absolute/path/openfoodfacts-products.jsonl.gz
+```
+
+יש להחליף את כתובת הקשר בדוגמה בכתובת אמיתית. הכלי אינו מוריד או שומר את קובצי התמונות; הוא שומר הפניה, מקור, ייחוס, רישיון ומועדי בדיקה. התאמת GTIN לבדה אינה מוכיחה שהאריזה נכונה או עדכנית: התאמה עמומה נשמרת כ־`candidate` ואינה מוצגת, שינוי בתמונה מאומתת נשמר לבדיקה ידנית, ולפני שימוש ציבורי נדרשת גם בדיקה חזותית. המקור המועדף לייצור הוא feed מורשה של יצרן/יבואן או GS1 ישראל.
+
+## בדיקות
+
+```sh
+npm test
+npm run check
+```
+
+הבדיקות מכסות ייחוס לקובצי המקור, זהות רשת וסניף, פענוח פורמטים, בחירת סניפים, בידוד ההשוואה, כמויות, סל חלקי, פקיעת מבצעים, תקינות המסד והסגר תמונות. הממשק נבדק גם בתצוגות desktop ו־mobile.
+
+## פריסה
+
+היישום דורש שירות Node/Python מקומי לצורך קליטת המקורות וממשקי ההשוואה. אחסון סטטי בלבד, כגון GitHub Pages, אינו יעד פריסה תקין לגרסה זו.

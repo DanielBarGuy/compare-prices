@@ -1,7 +1,7 @@
 """Nationwide locality and official branch directory. No synthetic branch prices."""
-import json,re,gzip,xml.etree.ElementTree as ET
+import json,re,xml.etree.ElementTree as ET
 from pathlib import Path
-from sync import DATA,save,now,get,cached_xml,fields,val,timestamp,shuf_listing,carrefour_listing
+from sync import DATA,save,now,get,cached_xml,decode_xml,read_source,fields,val,timestamp,shuf_listing,carrefour_listing,VERIFIED_CHAINS,source_adapter,is_stores_file
 from cerberus import Cerberus
 LOCALITIES_URL='https://data.gov.il/api/3/action/datastore_search?resource_id=5f75cd96-d670-43b0-bf6d-583436c5d054&limit=5000'
 CHAINS=[
@@ -11,7 +11,7 @@ CHAINS=[
  {'id':'yohananof','name':'יוחננוף','chainId':'7290803800003','adapter':'cerberus','username':'Yohananof','portal':'https://url.publishedprices.co.il/'},
  {'id':'victory','name':'ויקטורי','chainId':'7290696200003','adapter':'laib','portal':'https://laibcatalog.co.il/'},
  {'id':'osherad','name':'אושר עד','chainId':'7290103152017','adapter':'cerberus','username':'osherad','portal':'https://url.publishedprices.co.il/'},
- {'id':'mahsani','name':'מחסני השוק','chainId':'7290661400001','adapter':'laib','portal':'https://laibcatalog.co.il/'}]
+ {'id':'mahsani','name':'מחסני השוק','chainId':'7290661400001','adapter':'laib','portal':'https://laibcatalog.co.il/'}]+VERIFIED_CHAINS
 def norm(s):
  return re.sub(r'[^א-תa-z0-9]','',s.lower()).replace('קריית','קרית').replace('תקוה','תקווה')
 def localities(refresh=False):
@@ -27,6 +27,7 @@ def adapter(chain):
  if chain['adapter']=='carrefour':
   listing,_=carrefour_listing();return lambda search:listing,get
  if chain['adapter']=='shufersal':return lambda search:shuf_listing('0',5),get
+ if chain['adapter'] in ('bina','publishedprices','hazi','netiv','laib_safe','superpharm','wolt'):return source_adapter(chain)
  entries=json.loads(get('https://laibcatalog.co.il/webapi/api/getfiles?edi='+chain['chainId']))
  listing=[('https://laibcatalog.co.il/webapi/'+chain['chainId']+'/'+e['fileName'],e['fileName']) for e in entries]
  return lambda search:listing,get
@@ -35,9 +36,9 @@ def branch_rows(chain,xml,source,cities):
  root=ET.fromstring(xml)
  if val(fields(root),'ChainID')!=chain['chainId']:raise ValueError('Directory chain identity mismatch')
  codes={c['id']:c for c in cities};names={norm(c['name']):c for c in cities}
- aliases={'תלאביב':codes['5000'],'תלאביתיפה':codes['5000'],'תא':codes['5000'],'מודיעין':codes.get('1200'),'ראשון':codes.get('8300')}
+ aliases={'תלאביב':codes.get('5000'),'תלאביתיפה':codes.get('5000'),'תא':codes.get('5000'),'מודיעין':codes.get('1200'),'ראשון':codes.get('8300')}
  names.update({k:v for k,v in aliases.items() if v})
- out=[]
+ out={}
  for e in root.findall('.//Store'):
   d=fields(e);code=val(d,'StoreID');name=val(d,'StoreName');raw=val(d,'City');address=val(d,'Address')
   if not code.isdigit() or not name:continue
@@ -47,20 +48,25 @@ def branch_rows(chain,xml,source,cities):
    hay=' '+re.sub(r'[^א-תa-z0-9 ]',' ',(name+' '+address).lower())+' '
    matches=[c for c in cities if len(c['name'])>=4 and (' '+c['name']+' ') in hay]
    if matches:city=max(matches,key=lambda c:len(c['name']));method='source-name'
-  out.append({'id':chain['id']+'-'+code.zfill(3),'chain':chain['id'],'chainName':chain['name'],'chainId':chain['chainId'],'code':code.zfill(3),'name':name,'city':city['name'] if city else (raw if raw and not raw.isdigit() else 'מיקום לא צוין'),'cityId':city['id'] if city else None,'cityMatch':method if city else 'unknown','sourceCity':raw,'address':address,'portal':chain['portal'],'directorySource':source,'storeType':val(d,'StoreType')})
- return out
+  row={'id':chain['id']+'-'+code.zfill(3),'chain':chain['id'],'chainName':chain['name'],'chainId':chain['chainId'],'code':code.zfill(3),'name':name,'city':city['name'] if city else (raw if raw and not raw.isdigit() else 'מיקום לא צוין'),'cityId':city['id'] if city else None,'cityMatch':method if city else 'unknown','sourceCity':raw,'address':address,'portal':chain['portal'],'directorySource':source,'storeType':val(d,'StoreType')}
+  previous=out.get(row['id'])
+  score=lambda candidate:(candidate['cityId'] is not None,candidate['cityMatch']=='source-city',bool(candidate['address']),len(candidate['name'])+len(candidate['address']))
+  if previous is None or score(row)>score(previous):out[row['id']]=row
+ if not out:raise ValueError('Directory contains no valid stores')
+ return list(out.values())
 
 def refresh(offline=False):
  cities=localities();old=json.loads((DATA/'directory.json').read_text()) if (DATA/'directory.json').exists() else {};stores=[];reports=[]
  for chain in CHAINS:
   try:
    if offline:
-    files=list((DATA/'raw').glob('Stores'+chain['chainId']+'*'));p=max(files,key=lambda x:x.name);b=p.read_bytes();xml=gzip.decompress(b) if b[:2]==b'\x1f\x8b' else b;source=p.name
+    files=[p for p in (DATA/'raw').glob('Stores*') if is_stores_file(p.name,chain['chainId'])];p=max(files,key=lambda x:x.name)
+    xml=decode_xml(read_source(p));source=p.name
    else:
-    listing,fetcher=adapter(chain);files=[x for x in listing('Stores') if x[1].startswith('Stores'+chain['chainId'])];entry=max(files,key=lambda x:x[1]);xml,_=cached_xml(*entry,fetcher=fetcher);source=entry[1]
-   rows=branch_rows(chain,xml,source,cities);stores.extend(rows);reports.append({'id':chain['id'],'name':chain['name'],'count':len(rows),'source':source,'checkedAt':now(),'error':None});print(chain['id'],len(rows),'branches',flush=True)
+    listing,fetcher=adapter(chain);files=[x for x in listing('Stores') if is_stores_file(x[1],chain['chainId'])];entry=max(files,key=lambda x:x[1]);xml,_=cached_xml(*entry,fetcher=fetcher);source=entry[1]
+   rows=branch_rows(chain,xml,source,cities);stores.extend(rows);reports.append({'id':chain['id'],'name':chain['name'],'portal':chain['portal'],'count':len(rows),'source':source,'checkedAt':now(),'error':None});print(chain['id'],len(rows),'branches',flush=True)
   except Exception as e:
-   rows=[s for s in old.get('stores',[]) if s['chain']==chain['id']];stores.extend(rows);reports.append({'id':chain['id'],'name':chain['name'],'count':len(rows),'error':str(e)});print(chain['id'],e,flush=True)
+   rows=[s for s in old.get('stores',[]) if s['chain']==chain['id']];stores.extend(rows);reports.append({'id':chain['id'],'name':chain['name'],'portal':chain['portal'],'count':len(rows),'checkedAt':now(),'error':str(e)});print(chain['id'],e,flush=True)
  save(DATA/'directory.json',{'updatedAt':now(),'localitiesSource':LOCALITIES_URL,'localities':cities,'chains':reports,'stores':stores})
 if __name__=='__main__':
  import sys
