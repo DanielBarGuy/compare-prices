@@ -1425,8 +1425,10 @@ dialog .close:hover { color: var(--ink); background: var(--line); }
 @media (max-width: 760px) {
   .site-header { position: static; }
   .header-bar { flex-wrap: wrap; gap: 8px 12px; min-height: 56px; padding-block: 8px; }
+  .header-bar > .brand, footer .brand { min-height: 44px; }
+  .icon-btn { width: 44px; height: 44px; }
   .site-nav { order: 3; width: 100%; margin-inline-end: 0; }
-  .site-nav button { flex: 1; min-height: 42px; text-align: center; }
+  .site-nav button { flex: 1; min-height: 44px; text-align: center; }
   .header-end { margin-inline-start: auto; }
   .version { display: none; }
 
@@ -1465,9 +1467,13 @@ dialog .close:hover { color: var(--ink); background: var(--line); }
   .product-media { width: 76px; height: 76px; }
   .price { font-size: 32px; }
   .add, .compare, .load-more, .ghost { min-height: 44px; }
+  .categories button, .basket-head button { min-height: 44px; }
+  .basket-head button { min-width: 44px; }
+  .quantity button { width: 44px; height: 44px; }
   .city-option { padding-block: 12px; }
   .city-option strong { font-size: 15px; }
 
+  dialog .close { width: 44px; height: 44px; top: 10px; inset-inline-start: 10px; }
   #detailContent { padding: 22px 18px 24px; }
   .source-directory { grid-template-columns: 1fr; }
   footer { flex-direction: column; align-items: flex-start; }

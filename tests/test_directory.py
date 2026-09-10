@@ -17,6 +17,19 @@ class DirectoryTest(unittest.TestCase):
    if s['cityId']:self.assertIn(s['cityId'],cities)
   self.assertGreater(sum(s['chain']=='victory' for s in d['stores']),50)
   self.assertGreater(sum(s['chain']=='osherad' for s in d['stores']),15)
+ def test_every_city_selection_stays_inside_that_city(self):
+  if not (ROOT/'data/directory.json').exists():self.skipTest('integration data is generated on first sync')
+  d=json.loads((ROOT/'data/directory.json').read_text());by_city={}
+  for store in d['stores']:
+   if store['cityId']:by_city.setdefault(store['cityId'],[]).append(store)
+  self.assertGreater(len(by_city),100)
+  for city_id,stores in by_city.items():
+   seen=set();representatives=[]
+   for store in stores:
+    if store['chain'] in seen:continue
+    seen.add(store['chain']);representatives.append(store)
+   self.assertTrue(representatives,city_id)
+   self.assertTrue(all(store['cityId']==city_id for store in representatives),city_id)
  def test_unknown_city_not_assigned_another_branch_city(self):
   chain=CHAINS[0];xml='<Root><ChainID>'+chain['chainId']+'</ChainID><Store><StoreID>7</StoreID><StoreName>מרכז קניות</StoreName><City>0</City></Store></Root>'
   s=branch_rows(chain,xml,'test',[{'id':'5000','name':'תל אביב - יפו','english':'TEL AVIV','district':'תל אביב'}])[0]
