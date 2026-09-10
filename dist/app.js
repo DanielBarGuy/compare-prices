@@ -67,7 +67,7 @@ function card(p){
  // offers arrive fresh-before-stale, ascending by price inside each group,
  // so a winner and a spread may only be derived from the fresh ones.
  const fresh=p.offers.filter(o=>!o.stale),staleCount=p.offers.length-fresh.length,hasPromo=p.offers.some(o=>o.promotions.length);
- const media=p.image?.url?`<img src="${esc(p.image.url)}" alt="תמונת ${esc(p.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:'<span aria-hidden="true">🧺</span>';
+ const media=p.image?.url?`<img src="${esc(p.image.url)}" alt="תמונת ${esc(p.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:'<span class="image-unavailable">אין תמונה</span>';
  const head=`<div class="product-top"><div class="product-media">${media}</div><div class="product-head"><h3>${esc(p.name)}</h3><p class="product-meta">${esc(p.brand)} · ${esc(p.size)}</p><div class="barcode">${esc(p.barcode)}</div></div></div>`;
  const actions=`<div class="card-actions">${p.weighted?'<span class="meta">מוצר שקיל · לא נכנס לסל</span>':`<button class="add" data-add="${esc(p.id)}" aria-label="הוספת ${esc(p.name)} לסל">＋ לסל</button>`}<button class="compare" data-detail="${esc(p.id)}">כל המחירים ↗</button></div>`;
  if(!fresh.length){const last=p.offers[0];
@@ -100,3 +100,10 @@ applyTheme();$('themeToggle').onclick=()=>{theme=isDark()?'light':'dark';applyTh
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!theme)applyTheme();});
 async function init(){await status();await render();await renderBasket();}init();setInterval(status,10000);
 if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'add_products_to_basket',description:'Add verified product IDs to the visible shopping list. Does not purchase; basket uses regular prices excluding promotions.',inputSchema:{type:'object',properties:{items:{type:'array',items:{type:'object',properties:{id:{type:'string'},quantity:{type:'integer',minimum:1,maximum:99}},required:['id','quantity']}}},required:['items']},execute:async input=>{if(!Array.isArray(input?.items)||input.items.length>100||!input.items.every(i=>typeof i.id==='string'&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=99))throw Error('Invalid items');if(new Set([...Object.keys(basket),...input.items.map(i=>i.id)]).size>100)throw Error('Basket limit is 100 products');const products=await Promise.all(input.items.map(i=>api('/api/product?'+new URLSearchParams({id:i.id,stores:storeQuery()}))));if(products.some(p=>p.weighted))throw Error('Weighted products are not supported in basket');for(let i=0;i<products.length;i++){cache.set(products[i].id,products[i]);names.set(products[i].id,products[i].name);}for(const i of input.items)basket[i.id]=Math.min(99,(basket[i.id]||0)+i.quantity);await renderBasket();return {basket};}})).catch(()=>{});}catch{}}
+
+// A failed remote photo must not leave a broken image or hide the product.
+document.addEventListener("error", event => {
+ const img=event.target;
+ if (!(img instanceof HTMLImageElement) || !img.closest(".product-media, .image-credit")) return;
+ const fallback=document.createElement("span");fallback.className="image-unavailable";fallback.textContent="התמונה אינה זמינה";img.replaceWith(fallback);
+}, true);

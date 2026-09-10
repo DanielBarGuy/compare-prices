@@ -188,16 +188,16 @@ img { max-width: 100%; }
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
   background: var(--lime);
   color: var(--lime-ink);
-  transform: rotate(-7deg);
+  overflow: hidden;
   transition: transform 0.2s ease;
 }
 
-.brand-mark svg { width: 20px; height: 20px; }
+.brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .brand:hover .brand-mark { transform: rotate(4deg) scale(1.06); }
 
 .site-nav {
@@ -1753,3 +1753,5 @@ dialog .close:hover { color: var(--ink); background: var(--line); }
 
 .basket-item-name { display: flex; flex-direction: column; min-width: 0; }
 .basket-item-name small { margin-top: 2px; font-size: 11px; font-weight: 600; color: var(--high); }
+
+.product-media .image-unavailable { font: 12px/1.4 var(--font-ui); opacity: 1; color: var(--muted); text-align: center; }
