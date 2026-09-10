@@ -23,17 +23,12 @@
         <span class="brand-word">סל־סל</span>
       </a>
 
-      <nav class="site-nav" aria-label="ניווט ראשי">
-        <button class="nav-active" id="allNav" type="button" aria-pressed="true">השוואת מחירים</button>
-        <button id="promoNav" type="button" aria-pressed="false">מבצעים</button>
-      </nav>
-
       <div class="header-end">
         <button id="themeToggle" class="icon-btn" type="button" aria-label="מעבר למצב כהה" title="מצב תצוגה">
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6 17 17M7 7 5.4 5.4"/></g></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8.4 8.4 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" fill="currentColor"/></svg>
         </button>
-        <span class="version" title="גרסה ראשונה"><span class="version-full">גרסה </span>01</span>
+        <span class="version" title="גרסת בטא">בטא</span>
       </div>
     </div>
   </header>
@@ -42,9 +37,9 @@
     <!-- Hero: brand statement and the primary action share one block -->
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">קונים חכם. פשוט ככה.</p>
+        <p class="eyebrow">השוואה לפי הסניפים שבאמת רלוונטיים לך</p>
         <h1>אותו מוצר.<br><em>מחיר אחר.</em></h1>
-        <p class="hero-sub">לפני שממלאים את העגלה, בודקים איפה הסל משתלם יותר.</p>
+        <p class="hero-sub">בוחרים אזור, מוסיפים מוצרים ומשווים סל מלא בין הסניפים.</p>
       </div>
 
       <div class="hero-art" aria-hidden="true">
@@ -62,16 +57,26 @@
         </svg>
       </div>
 
+      <ol class="journey" aria-label="שלבי השוואת המחירים">
+        <li id="journeyArea" class="is-current"><a href="#city"><span>1</span><strong>בוחרים אזור</strong><small>והסניפים הקרובים</small></a></li>
+        <li id="journeyProducts"><a href="#search"><span>2</span><strong>מוסיפים מוצרים</strong><small>לרשימת הקניות</small></a></li>
+        <li id="journeyBasket"><a href="#basket"><span>3</span><strong>משווים סל</strong><small>בין הסניפים</small></a></li>
+      </ol>
+
       <div class="finder">
-        <label class="search" for="search">
-          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input id="search" placeholder="מה ברשימת הקניות שלך? שם מוצר או ברקוד" aria-label="חיפוש שם מוצר או ברקוד">
-          <kbd>/</kbd>
-        </label>
-        <label class="region" for="city">
-          <span class="region-label">עיר או יישוב</span>
-          <input id="city" placeholder="חיפוש בכל הארץ…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cityMenu" aria-autocomplete="list">
+        <div class="region">
+          <label class="region-label" for="city">שלב 1 · עיר או יישוב</label>
+          <div class="region-input">
+            <input id="city" placeholder="איפה קונים?" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cityMenu" aria-autocomplete="list">
+            <button id="clearCity" type="button" aria-label="ביטול בחירת היישוב" title="ללא יישוב" hidden>×</button>
+          </div>
           <div id="cityMenu" class="city-menu" role="listbox" aria-label="יישובים" hidden></div>
+        </div>
+        <label class="search" for="search">
+          <span class="search-step">שלב 2</span>
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search" placeholder="חפשו מוצר להוספה לסל — שם או ברקוד" aria-label="חיפוש שם מוצר או ברקוד">
+          <kbd>/</kbd>
         </label>
       </div>
 
@@ -80,14 +85,14 @@
     <div id="loadingBranches" class="banner" role="status" hidden></div>
     <div id="scopeBanner" class="banner warn" role="alert" hidden></div>
 
-    <!-- One control strip: which branches, how many results, how to sort -->
+    <!-- One control strip: area/branches, product filter and sort -->
     <div class="toolbar">
       <details id="branchPicker" class="branch-picker">
         <summary class="stores-chip">
           <span class="stores-dots" id="storesAvatars" aria-hidden="true"></span>
           <span class="stores-text">
             <strong id="selectionSummary">בחירת רשתות וסניפים</strong>
-            <small>איפה משווים? · שינוי הבחירה</small>
+            <small>סינון לפי אזור וסניף · שינוי הבחירה</small>
           </span>
           <span class="chip-spinner" aria-hidden="true"></span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
@@ -116,6 +121,13 @@
 
       <div class="toolbar-end">
         <span id="resultCount" role="status" aria-live="polite" aria-atomic="true"></span>
+        <div class="filter-field">
+          <span>סינון</span>
+          <nav class="site-nav" aria-label="סינון מוצרים">
+            <button class="nav-active" id="allNav" type="button" aria-pressed="true">כל המוצרים</button>
+            <button id="promoNav" type="button" aria-pressed="false">במבצע</button>
+          </nav>
+        </div>
         <label class="sort-field" for="sort">
           <span>מיון</span>
           <select id="sort" aria-label="מיון מוצרים">
@@ -131,8 +143,12 @@
       <div class="hero-stats" id="dataNotice" role="status">טוען נתונים מקובצי הרשתות…</div>
       <p class="coverage" id="coverage"></p>
     </div>
+    <p class="beta-note"><strong>גרסת בטא.</strong> ההשוואה כוללת רק מחירים שנקלטו ממקורות הרשתות המאומתים; הכיסוי מתרחב בהדרגה.</p>
 
-    <div id="categories" class="categories" aria-label="סניפים להשוואה"></div>
+    <div class="active-branches">
+      <span class="active-branches-label">הסניפים הפעילים <small>לחצו על סניף כדי לשנות את הבחירה</small></span>
+      <div id="categories" class="categories" aria-label="סניפים פעילים להשוואה"></div>
+    </div>
 
     <div class="workspace">
       <section class="catalog" id="catalog">
@@ -142,12 +158,16 @@
 
       <aside class="basket" id="basket" aria-label="סל הקניות" tabindex="-1">
         <div class="basket-head">
-          <h2>הסל שלך <span id="basketCount">0</span></h2>
-          <button id="clear" type="button">ניקוי</button>
+          <div><span class="section-step">שלב 3 · השוואת סל</span><h2>הסל שלך <span id="basketCount">0</span></h2></div>
+          <div class="basket-actions">
+            <button id="clear" type="button">ניקוי</button>
+            <button id="closeBasket" class="basket-close" type="button">חזרה למוצרים</button>
+          </div>
         </div>
+        <p class="basket-policy"><strong>אם מוצר חסר בסניף:</strong> הוא יסומן במפורש, לא יוחלף ולא יוחרג אוטומטית. הסניף לא ידורג כסל מלא.</p>
         <div id="basketTotals" class="basket-totals"></div>
         <div id="basketItems" class="basket-items"></div>
-        <p class="basket-note">מחירים רגילים בלבד, ללא מבצעים ומשלוח. סניף עם מוצרים חסרים אינו מדורג כסל מלא.</p>
+        <p class="basket-note">מחירים רגילים בלבד, ללא מבצעים ומשלוח. רשימת הקניות נשמרת רק במכשיר הזה.</p>
       </aside>
     </div>
 
@@ -165,11 +185,12 @@
     </footer>
   </main>
 
-  <a class="basket-dock" id="basketDock" href="#basket" hidden>
+  <button class="basket-backdrop" id="basketBackdrop" type="button" aria-label="סגירת הסל" hidden></button>
+  <button class="basket-dock" id="basketDock" type="button" aria-controls="basket" aria-expanded="false" aria-label="פתיחת השוואת הסל">
     <span class="dock-count" id="dockCount">0</span>
-    <span class="dock-text" id="dockText">הסל שלי</span>
+    <span class="dock-text" id="dockText">שלב 3 · הסל ממתין למוצרים</span>
     <span class="dock-go" aria-hidden="true">↑</span>
-  </a>
+  </button>
 
   <dialog id="detail" aria-label="פרטי מוצר ומקורות מחיר">
     <button class="close" aria-label="סגירה" type="button">×</button>
