@@ -7,7 +7,6 @@ const root=path.resolve('dist');
 const readJSON=async(file,fallback)=>{try{return JSON.parse(await readFile(file,'utf8'));}catch{return fallback;}};
 let directory=await readJSON('data/directory.json',{stores:[],chains:[],localities:[]});
 let selection=(await readJSON('data/selection.json',{stores:[]})).stores;
-if(!selection.length){await loadCatalog();selection=catalog.stores.map(s=>s.id);}
 await loadCatalog(selection);
 let reloadQueue=Promise.resolve();
 function reload(){reloadQueue=reloadQueue.catch(()=>{}).then(()=>loadCatalog(selection));return reloadQueue;}
@@ -29,6 +28,7 @@ function basketRows(items,ids){
  return rows;
 }
 async function sync(){
+ if(!selection.length){pending=false;syncError=null;return;}
  if(syncing){pending=true;return;}
  syncing=true;syncStores=[...selection];syncError=null;
  const p=spawn(process.env.PYTHON||'/usr/bin/python3',['-B','scripts/sync.py'],{cwd:process.cwd(),stdio:['ignore','pipe','pipe']});let errors='';
@@ -53,8 +53,10 @@ const server=http.createServer(async(req,res)=>{
   // Local browser only; do not let other websites change the active comparison.
   if(req.headers.origin&&!['http://localhost:3000','http://127.0.0.1:3000'].includes(req.headers.origin))return json({error:'Invalid origin'},403);
   const input=await body(),ids=input.stores;
-  if(!Array.isArray(ids)||!ids.length||ids.length>24||new Set(ids).size!==ids.length||!ids.every(id=>directory.stores.some(s=>s.id===id)))return json({error:'יש לבחור בין סניף אחד ל־24 סניפים מהרשימה'},400);
-  await writeFile('data/selection.json.tmp',JSON.stringify({stores:ids}));await rename('data/selection.json.tmp','data/selection.json');selection=ids;await reload();revision++;sync();return json({stores:selection,syncing:true},202);
+  if(!Array.isArray(ids)||ids.length>24||new Set(ids).size!==ids.length||!ids.every(id=>directory.stores.some(s=>s.id===id)))return json({error:'אפשר לבחור עד 24 סניפים מהרשימה'},400);
+  await writeFile('data/selection.json.tmp',JSON.stringify({stores:ids}));await rename('data/selection.json.tmp','data/selection.json');selection=ids;await reload();revision++;
+  if(ids.length){sync();return json({stores:selection,syncing:true},202);}
+  pending=false;syncError=null;return json({stores:selection,syncing:false});
  }
  if(url.pathname==='/api/products'){const selected=activeStores(url.searchParams.get('stores'));return json(listProducts({q:(url.searchParams.get('q')||'').slice(0,200),stores:selected,promos:url.searchParams.get('promos')==='1',sort:url.searchParams.get('sort'),offset:Math.max(0,Number(url.searchParams.get('offset'))||0)}));}
  if(url.pathname==='/api/product'){const selected=activeStores(url.searchParams.get('stores')),p=catalog.products.get(url.searchParams.get('id'));return json(p?filteredProduct(p,selected):{error:'Product not found'},p?200:404);}
