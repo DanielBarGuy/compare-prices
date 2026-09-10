@@ -1,3 +1,7 @@
 .DS_Store
 node_modules/
-data/*.html
+data/*
+!data/.gitkeep
+.sites-runtime/
+__pycache__/
+*.pyc
